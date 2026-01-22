@@ -19,8 +19,14 @@ class LLMService: ObservableObject, LLMServiceProtocol {
     // Private instance of LLMWrapper
     private let llmWrapper = LLMWrapper()
     
+    // RAG Service (knowledge base + memory)
+    private var ragService: RAGService?
+    
     // Private initializer for singleton
     private init() {
+        // Initialize RAG service
+        initializeRAGService()
+        
         // Check if model is ready
         DispatchQueue.global(qos: .background).async { [weak self] in
             let testResponse = self?.llmWrapper.runPrompt("test") ?? ""
@@ -36,6 +42,34 @@ class LLMService: ObservableObject, LLMServiceProtocol {
                     print("LLM Service initialized successfully")
                 }
             }
+        }
+    }
+    
+    // MARK: - RAG Service Initialization
+    
+    private func initializeRAGService() {
+        // Get paths for databases
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let memoryDBPath = documentsPath.appendingPathComponent("ai_memory.db").path
+        
+        // Try to get knowledge DB from bundle
+        var knowledgeDBPath: String?
+        if let bundlePath = Bundle.main.path(forResource: "emergency_knowledge", ofType: "db", inDirectory: "Resources") {
+            knowledgeDBPath = bundlePath
+            print("✓ Found knowledge database in bundle: \(bundlePath)")
+        } else if let bundlePath = Bundle.main.path(forResource: "emergency_knowledge", ofType: "db") {
+            knowledgeDBPath = bundlePath
+            print("✓ Found knowledge database in root bundle: \(bundlePath)")
+        } else {
+            print("⚠️ Warning: Knowledge database not found in bundle. RAG features will use fallback.")
+        }
+        
+        // Initialize RAG service if knowledge DB exists
+        if let kdbPath = knowledgeDBPath {
+            ragService = RAGService(knowledgeDBPath: kdbPath, memoryDBPath: memoryDBPath)
+            print("✓ RAG service initialized")
+        } else {
+            print("⚠️ RAG service not available - using fallback prompts")
         }
     }
     
@@ -55,6 +89,31 @@ class LLMService: ObservableObject, LLMServiceProtocol {
             throw LLMServiceError.modelNotReady
         }
         
+        // Get memory service to store conversation
+        let memoryService = ragService?.getMemoryService()
+        let sessionId = memoryService?.getCurrentSessionId()
+        
+        // Store user message in memory if available
+        let messageId = memoryService?.storeConversation(message: prompt, isUser: true, sessionId: sessionId)
+        
+        // Extract facts from user message
+        if let msgId = messageId {
+            memoryService?.extractAndStoreMemories(from: prompt, sessionId: sessionId, messageId: msgId)
+        }
+        
+        // Build context-aware system prompt using RAG + memory
+        var systemPrompt: String
+        if let ragService = ragService, let sid = sessionId {
+            systemPrompt = ragService.buildContextForQuery(prompt, sessionId: sid)
+            print("Using RAG-enhanced system prompt")
+        } else {
+            systemPrompt = RAGService.fallbackSystemPrompt()
+            print("Using fallback system prompt")
+        }
+        
+        // Set the dynamic system prompt
+        llmWrapper.setSystemPrompt(systemPrompt)
+        
         // Get response from wrapper
         guard let response = llmWrapper.runPrompt(prompt) else {
             throw LLMServiceError.emptyResponse
@@ -64,6 +123,9 @@ class LLMService: ObservableObject, LLMServiceProtocol {
         if response.contains("Error:") {
             throw LLMServiceError.processingError(response)
         }
+        
+        // Store AI response in memory
+        memoryService?.storeConversation(message: response, isUser: false, sessionId: sessionId)
         
         return response
     }
@@ -94,6 +156,27 @@ class LLMService: ObservableObject, LLMServiceProtocol {
             }
         }
     }
+    
+    // MARK: - Memory Management
+    
+    /// Get memory statistics
+    func getMemoryStats() -> (conversations: Int, facts: Int, sessions: Int) {
+        if let memoryService = ragService?.getMemoryService() {
+            let stats = memoryService.getMemoryStats()
+            return (conversations: stats.conversationCount, facts: stats.factCount, sessions: stats.sessionCount)
+        }
+        return (0, 0, 0)
+    }
+    
+    /// Clear current session memories
+    func clearCurrentSession() -> Bool {
+        return ragService?.getMemoryService()?.clearCurrentSession() ?? false
+    }
+    
+    /// Clear all memories
+    func clearAllMemories() -> Bool {
+        return ragService?.getMemoryService()?.clearAllMemories() ?? false
+    }
 }
 
 /// Custom errors for LLM service
@@ -112,4 +195,4 @@ enum LLMServiceError: Error, LocalizedError {
             return "Error processing request: \(message)"
         }
     }
-} 
+}

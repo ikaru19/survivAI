@@ -1,0 +1,41 @@
+{
+  "category": "fire",
+  "scenarios": [
+    {
+      "id": "fire_001",
+      "keywords": ["fire", "smoke", "burning building", "escape"],
+      "context": "Stay low to avoid smoke - breathe through cloth if possible. Feel doors before opening - if hot, use another exit. Close doors behind you to slow fire spread. If clothes catch fire: stop, drop, and roll. Never use elevator. Meet at designated spot outside.",
+      "priority": "critical"
+    },
+    {
+      "id": "fire_002",
+      "keywords": ["trapped", "can't escape", "surrounded by fire"],
+      "context": "Close door between you and fire. Seal gaps with cloth or tape. Signal from window - wave cloth or use flashlight. Stay low where air is clearer. If you must escape through smoke, crawl on hands and knees. Break window only as last resort.",
+      "priority": "critical"
+    },
+    {
+      "id": "fire_003",
+      "keywords": ["wildfire", "forest fire", "brush fire", "evacuation"],
+      "context": "Evacuate immediately when ordered. Drive with headlights on through smoke. Close car windows and vents. If trapped in vehicle, park away from vegetation, stay inside, cover yourself, lie on floor. If on foot, move to cleared area, water, or rocky area.",
+      "priority": "critical"
+    },
+    {
+      "id": "fire_004",
+      "keywords": ["small fire", "kitchen fire", "contained fire", "extinguish"],
+      "context": "For grease fire: turn off heat, slide lid over pan, never use water. For electrical fire: use extinguisher, never water. For clothing fire: stop, drop, and roll. Have clear exit path before fighting fire. If fire grows, evacuate immediately.",
+      "priority": "high"
+    },
+    {
+      "id": "fire_005",
+      "keywords": ["smoke inhalation", "breathing smoke", "carbon monoxide"],
+      "context": "Get person to fresh air immediately. Loosen tight clothing around neck and chest. Monitor breathing - start CPR if needed. Coughing is good - it clears airways. Seek medical attention even if feeling okay - effects can be delayed. Give oxygen if available.",
+      "priority": "critical"
+    },
+    {
+      "id": "fire_006",
+      "keywords": ["electrical fire", "sparking", "power line", "electrical emergency"],
+      "context": "Turn off power at breaker if safe to reach. Never use water on electrical fires - use fire extinguisher rated for electrical. If person is being shocked, turn off power first, never touch them directly. Use dry wooden object to separate them from source.",
+      "priority": "critical"
+    }
+  ]
+}

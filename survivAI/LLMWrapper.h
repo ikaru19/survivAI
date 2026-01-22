@@ -9,4 +9,5 @@
 
 @interface LLMWrapper : NSObject
 - (NSString *)runPrompt:(NSString *)prompt;
+- (void)setSystemPrompt:(NSString *)prompt;
 @end

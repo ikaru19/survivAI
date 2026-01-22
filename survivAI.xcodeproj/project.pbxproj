@@ -42,6 +42,16 @@
 		802BCEAC2DC6666D00D797E0 /* survivAIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = survivAIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		80A81CE32F2286AB00F4B1AD /* Exceptions for "survivAI" folder in "survivAI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/emergency_knowledge.db,
+			);
+			target = 802BCE932DC6666B00D797E0 /* survivAI */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 		802BCED72DC668B200D797E0 /* Exceptions for "survivAI" folder in "Compile Sources" phase from "survivAI" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
@@ -66,6 +76,7 @@
 		802BCE962DC6666B00D797E0 /* survivAI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				80A81CE32F2286AB00F4B1AD /* Exceptions for "survivAI" folder in "survivAI" target */,
 				802BCED72DC668B200D797E0 /* Exceptions for "survivAI" folder in "Compile Sources" phase from "survivAI" target */,
 				802BCEDB2DC66B6B00D797E0 /* Exceptions for "survivAI" folder in "Embed Frameworks" phase from "survivAI" target */,
 			);
@@ -140,6 +151,7 @@
 				802BCE912DC6666B00D797E0 /* Frameworks */,
 				802BCE922DC6666B00D797E0 /* Resources */,
 				802BCEDA2DC66B6B00D797E0 /* Embed Frameworks */,
+				806BA2032F22844E00DE958E /* Run Script */,
 			);
 			buildRules = (
 			);
@@ -270,6 +282,34 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		806BA2032F22844E00DE958E /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Scripts/generate_embeddings_basic.py",
+				"$(SRCROOT)/survivAI/Resources/EmergencyKnowledge/medical.json",
+				"$(SRCROOT)/survivAI/Resources/EmergencyKnowledge/wilderness.json",
+				"$(SRCROOT)/survivAI/Resources/EmergencyKnowledge/weather.json",
+				"$(SRCROOT)/survivAI/Resources/EmergencyKnowledge/fire.json",
+				"$(SRCROOT)/survivAI/Resources/EmergencyKnowledge/general.json",
+			);
+			name = "Run Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/survivAI/Resources/emergency_knowledge.db",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Disable sandboxing for this script (needs to write database file)\nexport ENABLE_USER_SCRIPT_SANDBOXING=NO\n\n#!/bin/bash\nset -e\n\necho \"🔍 Checking if knowledge database needs regeneration...\"\n\nif ! command -v python3 &> /dev/null; then\n    echo \"⚠️  Warning: python3 not found. Skipping.\"\n    exit 0\nfi\n\nDB_SOURCE=\"${SRCROOT}/survivAI/Resources/emergency_knowledge.db\"\nDB_DEST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/emergency_knowledge.db\"\nKNOWLEDGE_DIR=\"${SRCROOT}/survivAI/Resources/EmergencyKnowledge\"\nTIMESTAMP_FILE=\"${SRCROOT}/.db_last_generated\"\n\nNEEDS_REGEN=false\n\nif [ ! -f \"$DB_SOURCE\" ]; then\n    echo \"📦 Database not found. Generating...\"\n    NEEDS_REGEN=true\nelif [ ! -f \"$TIMESTAMP_FILE\" ]; then\n    NEEDS_REGEN=true\nelse\n    for json_file in \"$KNOWLEDGE_DIR\"/*.json; do\n        if [ \"$json_file\" -nt \"$TIMESTAMP_FILE\" ]; then\n            echo \"📝 Updated: $(basename \"$json_file\")\"\n            NEEDS_REGEN=true\n            break\n        fi\n    done\nfi\n\nif [ \"$NEEDS_REGEN\" = true ]; then\n    echo \"🚀 Regenerating database...\"\n    cd \"${SRCROOT}/Scripts\"\n    python3 generate_embeddings_basic.py\n    touch \"$TIMESTAMP_FILE\"\n    echo \"✅ Database regenerated successfully\"\nfi\n\n# Copy database to app bundle\necho \"📋 Copying database to app bundle...\"\nmkdir -p \"$(dirname \"$DB_DEST\")\"\ncp \"$DB_SOURCE\" \"$DB_DEST\"\necho \"✓ Database ready in app bundle\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		802BCE902DC6666B00D797E0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -346,7 +386,7 @@
 				DEVELOPMENT_TEAM = P97RH7S272;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -408,7 +448,7 @@
 				DEVELOPMENT_TEAM = P97RH7S272;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

@@ -1,0 +1,53 @@
+{
+  "category": "wilderness",
+  "scenarios": [
+    {
+      "id": "wild_001",
+      "keywords": ["lost", "stranded", "can't find way", "missing trail"],
+      "context": "Stay where you are - moving makes you harder to find. Make yourself visible with bright colors or reflective items. Create three signals in triangle pattern (fires, rock piles, or cleared areas). Conserve energy and resources. Stay on high ground if safe.",
+      "priority": "high"
+    },
+    {
+      "id": "wild_002",
+      "keywords": ["shelter", "need protection", "building shelter", "overnight"],
+      "context": "Find natural shelter first (cave, overhang, dense trees). Build lean-to using branches against fallen log or rock. Insulate ground with leaves, pine needles, or grass. Face opening away from wind. Make roof waterproof with overlapping branches and debris.",
+      "priority": "high"
+    },
+    {
+      "id": "wild_003",
+      "keywords": ["water", "thirsty", "dehydration", "find water"],
+      "context": "Look for water flowing downhill, animal trails converging, or green vegetation. Collect morning dew with cloth. Dig in dry streambeds. Boil water for 1 minute to purify. Use solar still or transpiration bag if no water source. Ration existing water carefully.",
+      "priority": "high"
+    },
+    {
+      "id": "wild_004",
+      "keywords": ["fire", "start fire", "warmth", "signal fire"],
+      "context": "Gather tinder (dry grass, bark, lint), kindling (small twigs), and fuel wood (larger branches). Use flint, battery, or friction method. Build in sheltered spot away from overhanging branches. Keep three signal fires ready. Never leave fire unattended.",
+      "priority": "high"
+    },
+    {
+      "id": "wild_005",
+      "keywords": ["navigation", "direction", "compass", "find north"],
+      "context": "Sun rises in east, sets in west. At noon, sun is south in northern hemisphere. Use stick shadow method: mark shadow tip, wait 15 minutes, mark again, line points east-west. Moss grows on north side of trees in northern hemisphere (not always reliable).",
+      "priority": "medium"
+    },
+    {
+      "id": "wild_006",
+      "keywords": ["signaling", "rescue", "help", "attracting attention"],
+      "context": "Use three of anything as distress signal (fires, whistle blasts, rock piles). Create large ground-to-air signals with rocks, logs, or cleared snow. Mirror or shiny object for reflecting sunlight. Whistle carries farther than voice. Make noise at regular intervals.",
+      "priority": "high"
+    },
+    {
+      "id": "wild_007",
+      "keywords": ["wildlife", "dangerous animals", "bear", "attack"],
+      "context": "Make yourself look large and make noise to scare most animals. For bears: if brown lie down, if black fight back. Never run from predators. Slowly back away while facing animal. Avoid eye contact with primates. Store food away from sleeping area.",
+      "priority": "high"
+    },
+    {
+      "id": "wild_008",
+      "keywords": ["food", "hungry", "edible plants", "foraging"],
+      "context": "You can survive weeks without food but only days without water - prioritize water first. Avoid mushrooms unless expert. Universal edibility test: rub on skin, lips, tongue before eating. Cook when possible. Insects are protein-rich and generally safe if cooked.",
+      "priority": "low"
+    }
+  ]
+}

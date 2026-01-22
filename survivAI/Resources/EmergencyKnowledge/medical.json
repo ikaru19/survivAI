@@ -1,0 +1,65 @@
+{
+  "category": "medical",
+  "scenarios": [
+    {
+      "id": "med_001",
+      "keywords": ["bleeding", "cut", "wound", "hemorrhage", "laceration"],
+      "context": "Apply direct pressure to wound using clean cloth or gauze. Elevate injured area above heart level if possible. Do not remove embedded objects. If blood soaks through, add more layers without removing the first. Apply pressure to pressure points if needed.",
+      "priority": "critical"
+    },
+    {
+      "id": "med_002",
+      "keywords": ["fracture", "broken bone", "broken leg", "broken arm", "broken ankle"],
+      "context": "Immobilize the injured area immediately. Do not try to straighten or move the bone. Splint above and below the fracture using rigid materials. Apply ice wrapped in cloth to reduce swelling. Keep the person still and call for help.",
+      "priority": "critical"
+    },
+    {
+      "id": "med_003",
+      "keywords": ["choking", "airway blocked", "can't breathe", "heimlich"],
+      "context": "If person can cough, encourage coughing. If unable to breathe, perform abdominal thrusts (Heimlich maneuver). Stand behind, make fist above navel, grasp with other hand, thrust inward and upward. For unconscious person, begin CPR.",
+      "priority": "critical"
+    },
+    {
+      "id": "med_004",
+      "keywords": ["hypothermia", "freezing", "cold exposure", "frostbite"],
+      "context": "Move person to warm shelter immediately. Remove wet clothing gently. Warm the body core first (chest, neck, head, groin) with blankets or body heat. Give warm non-alcoholic drinks if conscious. Do not rub frostbitten areas.",
+      "priority": "high"
+    },
+    {
+      "id": "med_005",
+      "keywords": ["heat stroke", "heat exhaustion", "overheating", "dehydration"],
+      "context": "Move person to cool shaded area immediately. Remove excess clothing. Cool the body with wet cloths or water. Fan the person. Give cool water if conscious. Seek medical help for heat stroke (no sweating, confusion, loss of consciousness).",
+      "priority": "critical"
+    },
+    {
+      "id": "med_006",
+      "keywords": ["heart attack", "chest pain", "cardiac arrest"],
+      "context": "Have person sit or lie down immediately. Loosen tight clothing. If conscious, give aspirin if available and not allergic. Call emergency services. If unconscious with no pulse, begin CPR immediately - 30 chest compressions to 2 rescue breaths.",
+      "priority": "critical"
+    },
+    {
+      "id": "med_007",
+      "keywords": ["burn", "scalding", "fire injury", "chemical burn"],
+      "context": "Cool the burn with cool (not ice cold) running water for 10-20 minutes. Remove jewelry and tight clothing before swelling. Cover with sterile non-stick dressing. Do not apply ice, butter, or ointments. For chemical burns, flush with water for 20+ minutes.",
+      "priority": "high"
+    },
+    {
+      "id": "med_008",
+      "keywords": ["shock", "pale", "weak pulse", "confusion"],
+      "context": "Lay person down and elevate legs 12 inches if no spinal injury. Keep warm with blankets. Do not give food or drink. Loosen restrictive clothing. Monitor breathing and pulse. Turn head to side if vomiting.",
+      "priority": "critical"
+    },
+    {
+      "id": "med_009",
+      "keywords": ["snake bite", "venomous bite", "spider bite"],
+      "context": "Keep person calm and still to slow venom spread. Remove jewelry and tight clothing near bite. Position bite below heart level. Clean with soap and water. Mark the edge of swelling with time noted. Do not apply ice, cut wound, or apply tourniquet.",
+      "priority": "high"
+    },
+    {
+      "id": "med_010",
+      "keywords": ["allergic reaction", "anaphylaxis", "swelling", "difficulty breathing"],
+      "context": "Use epinephrine auto-injector (EpiPen) immediately if available. Have person lie down with legs elevated. Loosen tight clothing. If vomiting, turn to side. Monitor breathing constantly. Second dose may be needed after 5-15 minutes.",
+      "priority": "critical"
+    }
+  ]
+}

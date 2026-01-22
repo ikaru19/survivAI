@@ -27,25 +27,16 @@
         // Initialize conversation history
         conversationHistory = [[NSMutableArray alloc] init];
 
-        // Define system prompt for the model to understand its role - direct,
-        // no chit-chat
+        // Define DEFAULT system prompt (can be overridden via setSystemPrompt)
         systemPrompt =
             @"<|im_start|>system\n"
              "You are an emergency survival assistant.\n"
-             "Always use all available conversation history to understand the "
-             "user's current situation and risks.\n"
-             "If the user asks about their \"situation\" or similar, analyze "
-             "their previous messages and include all relevant details from "
-             "history.\n"
              "Your response must be ONLY 5 bullet points.\n"
              "Each bullet must:\n"
              "• Start with '• '\n"
              "• Contain the ACTION in ALL CAPS\n"
              "• Follow with a hyphen and a short explanation\n"
              "No extra bullets. No extra sentences. No chit-chat.\n"
-             "Example:\n"
-             "• FIND SHELTER - Move to a safe, dry location\n"
-             "• STAY WARM - Insulate with clothing or natural materials\n"
              "<|im_end|>";
 
         // Try to load model from Models directory first, then fall back to root
@@ -123,10 +114,17 @@
         llama_sampler_chain_add(sampler,
                                 llama_sampler_init_mirostat_v2(2, 4.0, 0.08));
 
-        NSLog(@"LLM initialized successfully with Phi 3 model and conversation "
-              @"history");
+    NSLog(@"LLM initialized successfully with Phi 3 model and conversation "
+          @"history");
     }
     return self;
+}
+
+- (void)setSystemPrompt:(NSString *)prompt {
+    if (prompt && prompt.length > 0) {
+        systemPrompt = prompt;
+        NSLog(@"System prompt updated (%lu chars)", (unsigned long)prompt.length);
+    }
 }
 
 - (int)countTokensInText:(NSString *)text {

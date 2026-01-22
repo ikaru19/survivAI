@@ -1,0 +1,53 @@
+{
+  "category": "weather",
+  "scenarios": [
+    {
+      "id": "weather_001",
+      "keywords": ["cold", "freezing", "snow", "blizzard", "winter storm"],
+      "context": "Find or create windproof shelter immediately. Layer clothing to trap air - remove wet items. Cover head, hands, and feet as extremities lose heat fastest. Stay dry at all costs. Generate body heat through light movement. Huddle with others for warmth.",
+      "priority": "critical"
+    },
+    {
+      "id": "weather_002",
+      "keywords": ["hot", "extreme heat", "sun exposure", "desert"],
+      "context": "Seek shade or create it with available materials. Cover exposed skin with light-colored, loose clothing. Stay still during hottest hours (10am-4pm). Wet clothes or cloth on neck and wrists. Ration water carefully but stay hydrated. Travel during cooler morning/evening.",
+      "priority": "high"
+    },
+    {
+      "id": "weather_003",
+      "keywords": ["flood", "rising water", "heavy rain"],
+      "context": "Move to higher ground immediately. Avoid walking through moving water over 6 inches - it can knock you down. Do not drive through flooded roads. If trapped in vehicle, get on roof. Avoid downed power lines. Flash floods can arrive in minutes.",
+      "priority": "critical"
+    },
+    {
+      "id": "weather_004",
+      "keywords": ["tornado", "twister", "funnel cloud"],
+      "context": "Seek sturdy shelter immediately - basement or interior room on lowest floor. Get under heavy furniture if possible. Stay away from windows. If outdoors, lie flat in ditch or low area, protect head. Do not hide under bridges. Mobile homes offer no protection.",
+      "priority": "critical"
+    },
+    {
+      "id": "weather_005",
+      "keywords": ["hurricane", "tropical storm", "high winds"],
+      "context": "Evacuate if ordered. If staying: go to interior room away from windows, bring emergency supplies. Fill bathtubs with water. After storm, avoid standing water (may be electrified), downed power lines, and weakened structures. Boil water until declared safe.",
+      "priority": "critical"
+    },
+    {
+      "id": "weather_006",
+      "keywords": ["lightning", "thunderstorm", "electrical storm"],
+      "context": "Get indoors or in vehicle (hard-top). If caught outside, avoid open fields, hilltops, isolated trees, and water. Crouch low with feet together, minimize ground contact. Wait 30 minutes after last thunder before resuming activities. If someone is struck, check for pulse and breathing.",
+      "priority": "high"
+    },
+    {
+      "id": "weather_007",
+      "keywords": ["earthquake", "tremor", "shaking"],
+      "context": "Drop, cover, and hold on. Get under sturdy furniture or against interior wall. Stay away from windows, outside walls, and tall furniture. If outside, move to open area away from buildings, trees, power lines. After shaking stops, check for injuries and hazards.",
+      "priority": "critical"
+    },
+    {
+      "id": "weather_008",
+      "keywords": ["avalanche", "snow slide", "buried"],
+      "context": "If caught, try to move to side of avalanche. Fight to stay on surface using swimming motions. If buried, create air pocket in front of face immediately. Push hand toward surface. Remain calm to conserve oxygen. Spit to determine which way is up (gravity).",
+      "priority": "critical"
+    }
+  ]
+}

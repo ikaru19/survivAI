@@ -1,0 +1,53 @@
+{
+  "category": "general",
+  "scenarios": [
+    {
+      "id": "gen_001",
+      "keywords": ["survival priorities", "what to do first", "priorities"],
+      "context": "Survival priorities in order: 1) Immediate danger (stop bleeding, get to safety). 2) Shelter from elements (you can die of exposure in hours). 3) Water (3 days without water). 4) Fire for warmth and signaling. 5) Food (3 weeks without food). Stay calm and assess systematically.",
+      "priority": "high"
+    },
+    {
+      "id": "gen_002",
+      "keywords": ["stay calm", "panic", "anxiety", "scared"],
+      "context": "Stop and take slow deep breaths - inhale for 4 counts, hold for 4, exhale for 4. Fear is natural but panic kills. Assess your situation factually. Focus on immediate next step, not the entire problem. Small actions build confidence. Remember: people survive extreme situations regularly.",
+      "priority": "high"
+    },
+    {
+      "id": "gen_003",
+      "keywords": ["phone", "signal", "call for help", "911"],
+      "context": "Call 911 or local emergency number immediately if possible. If no signal, try texting (uses less signal). Move to higher ground or open area for better reception. Turn phone off between attempts to save battery. Use power-saving mode. Note: emergency calls work without SIM in some regions.",
+      "priority": "high"
+    },
+    {
+      "id": "gen_004",
+      "keywords": ["first aid kit", "supplies", "emergency kit", "what to use"],
+      "context": "Use what you have: Clean cloth for bandages, strips of clothing for ties/splints, sticks for splints, shoelaces for tourniquets. Improvise - plastic bags for waterproofing, duct tape for securing, safety pins for fastening. Sanitize with fire or alcohol if available.",
+      "priority": "medium"
+    },
+    {
+      "id": "gen_005",
+      "keywords": ["injury assessment", "check injuries", "triage"],
+      "context": "ABC priority: Airway (clear and open?), Breathing (is person breathing?), Circulation (severe bleeding?). Check consciousness level. Look for head, neck, or spine injuries before moving person. Document injuries and time. Treat life-threatening issues first.",
+      "priority": "high"
+    },
+    {
+      "id": "gen_006",
+      "keywords": ["communication", "leaving message", "marking location"],
+      "context": "Leave clear information about your location, direction of travel, time, and condition. Mark trail with bright materials, cairns, or broken branches. Create X with rocks or sticks to show 'need help'. Write messages on ground visible from air. Tell someone your plans before trips.",
+      "priority": "medium"
+    },
+    {
+      "id": "gen_007",
+      "keywords": ["conserve energy", "rationing", "limited supplies"],
+      "context": "Avoid sweating - it wastes water. Rest frequently. Work during cooler hours. Share body heat. Ration supplies to last expected rescue time plus 50%. Don't eat if you have no water (digestion uses water). Keep occupied but avoid exhaustion.",
+      "priority": "medium"
+    },
+    {
+      "id": "gen_008",
+      "keywords": ["mental health", "staying positive", "hope", "will to survive"],
+      "context": "Having a reason to survive is crucial. Think of loved ones. Set small achievable goals. Maintain routines where possible. Talk to yourself - audible self-encouragement helps. Visualize successful rescue. Remember: rescue is coming, you just need to survive until then.",
+      "priority": "medium"
+    }
+  ]
+}
