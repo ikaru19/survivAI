@@ -1,28 +1,47 @@
-# survivAI
-
-**survivAI** is a native iOS/macOS emergency survival assistant app that provides local AI assistance using the llama.cpp inference engine. The app runs large language models entirely on-device without requiring internet connectivity or external API calls, making it ideal for emergency situations where network access may be unavailable.
+<div align="center">
+  <img src="survivAI/Assets.xcassets/AppIcon.appiconset/1024.png" alt="survivAI Logo" width="200"/>
+  
+  # survivAI
+  
+  **survivAI** is a native iOS/macOS emergency survival assistant app with RAG (Retrieval-Augmented Generation) and semantic memory capabilities. It provides local AI assistance using the llama.cpp inference engine, running entirely on-device without requiring internet connectivity or external API calls—making it ideal for emergency situations where network access may be unavailable.
+</div>
 
 ## Overview
 
-survivAI is designed as an emergency survival companion that provides critical, actionable advice in survival situations. The app features:
+survivAI is designed as an emergency survival companion that provides critical, actionable advice in survival situations. The app combines a large language model with a curated knowledge base and semantic memory to deliver context-aware, intelligent responses. Key features include:
 
-- **Fully Offline Operation**: All AI processing happens on-device using llama.cpp
-- **Emergency-Focused**: Specialized system prompt for survival scenarios
-- **Structured Responses**: Clear 5-bullet-point format for quick decision-making
-- **Conversation History**: Context-aware responses based on your situation
-- **Privacy-First**: No data leaves your device
+- **RAG-Enhanced Responses**: Retrieves relevant survival knowledge from a pre-built database to augment AI responses
+- **Semantic Memory**: Automatically extracts and remembers key facts from conversations (location, conditions, resources, etc.)
+- **Fully Offline Operation**: All AI processing, database queries, and memory management happen on-device
+- **Emergency-Focused**: Specialized knowledge base covering natural disasters, outdoor emergencies, medical situations, and more
+- **Context-Aware**: Maintains conversation history and semantic facts to provide personalized advice
+- **Privacy-First**: No data leaves your device—all knowledge, memories, and conversations stay local
 
 ## Key Features
 
-- ✅ Local AI inference (no internet required)
-- ✅ Emergency survival assistant with specialized prompts
-- ✅ Conversation history management with token-aware truncation
-- ✅ Metal GPU acceleration for optimal performance on Apple Silicon
-- ✅ Modern SwiftUI interface with typing effects
-- ✅ Cross-platform support (iOS, macOS, tvOS, visionOS)
-- ✅ Phi-3.5 Mini Instruct model (uncensored variant for emergency scenarios)
+### 🧠 Intelligence & Knowledge
+- ✅ **RAG (Retrieval-Augmented Generation)**: Searches curated emergency knowledge base for relevant information
+- ✅ **Semantic Memory System**: Automatically extracts and stores key facts from conversations
+- ✅ **Vector Database**: Pre-computed embeddings for fast knowledge retrieval
+- ✅ **Category Detection**: Automatically categorizes emergencies (natural disaster, medical, outdoor, etc.)
+- ✅ **Context-Aware Responses**: Combines knowledge base, memories, and conversation history
 
-## Model Setup Required
+### 🚀 Performance & Privacy
+- ✅ **100% Offline Operation**: No internet required—LLM inference, database queries, and memory all on-device
+- ✅ **Metal GPU Acceleration**: Optimized for Apple Silicon with full GPU offloading
+- ✅ **Session Management**: Automatic session handling with 48-hour expiry
+- ✅ **Privacy-First Architecture**: All data stays local, no telemetry or cloud sync
+
+### 💻 Technical Features
+- ✅ **Phi-3.5 Mini Instruct Model**: Uncensored variant for direct emergency advice
+- ✅ **SQLite Vector Database**: FTS5 full-text search with embedding support
+- ✅ **Conversation History**: Token-aware truncation for optimal context management
+- ✅ **Modern SwiftUI Interface**: Clean, responsive UI with typing effects
+- ✅ **Cross-Platform Support**: iOS, macOS, tvOS, visionOS
+
+## Setup Requirements
+
+### 1. Model Setup (Required)
 
 **The app requires a GGUF model file to function.** The model files are not included in the repository due to their large size (2.2GB+).
 
@@ -50,13 +69,40 @@ survivAI is designed as an emergency survival companion that provides critical, 
    - Select the `survivAI` target
    - Verify it appears in Build Phases → Copy Bundle Resources
 
-### Why This Model?
+#### Why This Model?
 
 The **Phi-3.5-mini-instruct_Uncensored** model was chosen for several reasons:
 - **Compact Size**: Optimized for mobile devices (2.2GB at Q4_K_M quantization)
 - **High Quality**: Based on Microsoft's Phi-3.5, trained for instruction-following
 - **Uncensored Variant**: Provides direct, unfiltered emergency advice without safety limitations
 - **Fast Inference**: Runs efficiently on iPhone 16 Pro with Metal acceleration
+
+### 2. Knowledge Database Setup (Automatic)
+
+The app includes a **pre-built emergency knowledge database** that is automatically generated during the build process:
+
+- **Location**: `survivAI/Resources/emergency_knowledge.db`
+- **Auto-Generation**: The database is regenerated automatically if JSON knowledge files are updated
+- **Build Phase Script**: `Scripts/build_phase_regenerate_db.sh` handles automatic regeneration
+- **Manual Generation**: Run `python3 Scripts/generate_embeddings.py` to regenerate manually
+
+#### Knowledge Database Contents
+- Curated emergency survival scenarios across multiple categories
+- Pre-computed sentence embeddings (all-MiniLM-L6-v2 model)
+- FTS5 full-text search index for fast keyword matching
+- Hybrid search combining keywords and semantic similarity
+
+#### Python Dependencies (for database regeneration)
+If you need to modify the knowledge base, install Python dependencies:
+```bash
+cd Scripts
+pip install -r requirements.txt
+```
+
+Required packages:
+- `sentence-transformers==2.2.2` - For generating embeddings
+- `torch==2.1.0` - PyTorch backend
+- `numpy==1.24.3` - Numerical operations
 
 ## Project Structure
 
@@ -71,17 +117,23 @@ survivAI/
 │   │   └── .gitkeep                   # Directory marker with instructions
 │   ├── Services/
 │   │   ├── LLMService.swift           # LLM service layer
+│   │   ├── RAGService.swift           # RAG coordination layer (NEW)
+│   │   ├── VectorDBService.swift      # Knowledge base retrieval (NEW)
+│   │   ├── MemoryService.swift        # Semantic memory management (NEW)
 │   │   └── TextProcessingService.swift # Text processing utilities
 │   ├── ViewModels/
 │   │   └── ChatViewModel.swift        # Chat state management
 │   ├── Views/
 │   │   ├── ChatView.swift             # Main chat interface
 │   │   ├── ChatBubble.swift           # Message bubble component
-│   │   ├── MessageView.swift          # Message display
+│   │   ├── MessageView.swift          # Message display with RAG context
 │   │   ├── TypingIndicator.swift     # Loading animation
 │   │   ├── TypingEffect.swift         # Text animation effect
 │   │   ├── EmergencyQuickButton.swift # Quick action buttons
 │   │   └── AppHeader.swift            # App header component
+│   ├── Resources/                     # Data resources (NEW)
+│   │   ├── emergency_knowledge.db     # Pre-built knowledge database
+│   │   └── EmergencyKnowledge/        # JSON knowledge source files
 │   ├── Extensions/
 │   │   └── String+Extensions.swift    # String utilities
 │   ├── Assets.xcassets/               # App icons and visual assets
@@ -89,21 +141,82 @@ survivAI/
 │   ├── survivAI-Bridging-Header.h     # Swift/Objective-C bridging
 │   ├── survivAI.entitlements          # App capabilities
 │   └── Project.swift                  # Project configuration
+├── Scripts/                           # Build automation (NEW)
+│   ├── generate_embeddings.py         # Full embedding generation
+│   ├── generate_embeddings_basic.py   # Lightweight version (no ML)
+│   ├── build_phase_regenerate_db.sh   # Xcode build phase script
+│   ├── run_embeddings.sh              # Manual generation script
+│   └── requirements.txt               # Python dependencies
 ├── survivAI.xcodeproj/                # Xcode project
-├── .gitignore                         # Git ignore rules (excludes GGUF files)
+├── .gitignore                         # Git ignore rules
 └── README.md                          # This file
 ```
 
 ## Architecture
 
+### System Overview
+
+survivAI uses a **three-layer architecture** combining RAG (Retrieval-Augmented Generation) with semantic memory:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        User Interface                       │
+│              (SwiftUI Views + ViewModel)                    │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────────┐
+│                    RAG Service Layer                        │
+│  • Combines Knowledge Base + Semantic Memory + LLM         │
+│  • Builds context-aware system prompts                     │
+│  • Category detection and routing                          │
+└─────────┬───────────────────────────────┬───────────────────┘
+          │                               │
+┌─────────▼──────────────┐   ┌───────────▼───────────────────┐
+│  VectorDBService       │   │   MemoryService               │
+│  • Knowledge retrieval │   │   • Conversation storage      │
+│  • Hybrid search       │   │   • Semantic fact extraction │
+│  • FTS5 + embeddings   │   │   • Session management        │
+└────────────────────────┘   └───────────────────────────────┘
+          │                               │
+┌─────────▼──────────────┐   ┌───────────▼───────────────────┐
+│ emergency_knowledge.db │   │   semantic_memory.db          │
+│ • Pre-built knowledge  │   │   • Conversations             │
+│ • Category-organized   │   │   • Extracted facts           │
+│ • Vector embeddings    │   │   • Session data              │
+└────────────────────────┘   └───────────────────────────────┘
+```
+
 ### Core Components
+
+#### RAG Layer (NEW)
+- **RAGService.swift**: Orchestrates knowledge retrieval and memory integration
+  - Detects emergency category from user query
+  - Retrieves relevant knowledge chunks from vector database
+  - Fetches relevant semantic memories from conversation history
+  - Builds enriched system prompts combining all context sources
+  - Manages token budget for context inclusion
+
+#### Knowledge Base Layer (NEW)
+- **VectorDBService.swift**: Vector database operations for knowledge retrieval
+  - Hybrid search combining FTS5 full-text and semantic similarity
+  - Category-filtered queries for targeted knowledge
+  - Pre-computed embeddings (all-MiniLM-L6-v2 model, 384 dimensions)
+  - Priority-weighted ranking for critical information
+
+#### Semantic Memory Layer (NEW)
+- **MemoryService.swift**: Conversation memory and fact extraction
+  - Automatic semantic fact extraction using pattern matching
+  - Extracts: location, condition, resource, environment, temporal facts
+  - Session-based memory management with auto-expiry (48 hours)
+  - Importance-weighted retrieval for relevant context
+  - Conversation history storage for continuity
 
 #### LLM Layer
 - **LLMWrapper.mm**: Objective-C++ wrapper around llama.cpp C API
   - Model loading and initialization
   - Token management and context window handling
-  - Prompt building with conversation history
-  - Generation with bullet-point limiting
+  - Prompt building with RAG-enhanced system prompts
+  - Generation with streaming support
   - Metal GPU acceleration configuration
 
 #### Service Layer
@@ -111,8 +224,9 @@ survivAI/
 - **TextProcessingService.swift**: Text cleanup and formatting utilities
 
 #### View Layer (MVVM)
-- **ChatViewModel.swift**: Manages chat state, message history, and LLM interactions
+- **ChatViewModel.swift**: Manages chat state, message history, and coordinates RAG pipeline
 - **ChatView.swift**: Main SwiftUI view for the chat interface
+- **MessageView.swift**: Message display with RAG context indicators
 - **ChatBubble.swift**: Message bubble component with user/assistant styling
 - **TypingEffect.swift**: Animated text reveal for AI responses
 

@@ -31,12 +31,8 @@
         systemPrompt =
             @"<|im_start|>system\n"
              "You are an emergency survival assistant.\n"
-             "Your response must be ONLY 5 bullet points.\n"
-             "Each bullet must:\n"
-             "• Start with '• '\n"
-             "• Contain the ACTION in ALL CAPS\n"
-             "• Follow with a hyphen and a short explanation\n"
-             "No extra bullets. No extra sentences. No chit-chat.\n"
+             "Provide clear, actionable survival advice in natural, conversational language.\n"
+             "Be concise but complete. Explain the most important actions first.\n"
              "<|im_end|>";
 
         // Try to load model from Models directory first, then fall back to root
@@ -220,24 +216,16 @@
 
 - (void)addToHistory:(NSString *)userMessage
             response:(NSString *)assistantResponse {
-    // Count bullet points by splitting on "•" regardless of line breaks
-    NSArray *bulletParts = [assistantResponse componentsSeparatedByString:@"•"];
-    int validBullets = 0;
+    // Validate response has meaningful content (at least 50 characters and some sentences)
+    NSString *trimmed = [assistantResponse stringByTrimmingCharactersInSet:
+                         [NSCharacterSet whitespaceAndNewlineCharacterSet]];
     
-    for (NSString *part in bulletParts) {
-        NSString *trimmedPart = [part stringByTrimmingCharactersInSet:
-                                 [NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        // Skip empty parts (first part before first bullet is usually empty)
-        if (trimmedPart.length == 0) continue;
-        
-        // Valid bullet must contain a hyphen (ACTION - description format)
-        if ([trimmedPart containsString:@"-"]) {
-            validBullets++;
-        }
-    }
+    // Check for reasonable length and sentence structure
+    BOOL hasReasonableLength = trimmed.length >= 50;
+    BOOL hasSentences = [trimmed containsString:@"."] || [trimmed containsString:@"!"];
     
-    // Only add to history if we have proper bullet points
-    if (validBullets >= 3) {
+    // Only add to history if response is valid
+    if (hasReasonableLength && hasSentences) {
         // Add user turn
         NSString *userTurn =
             [NSString stringWithFormat:@"\n<|im_start|>user\n%@\n<|im_end|>",
@@ -250,13 +238,11 @@
                              assistantResponse];
         [conversationHistory addObject:assistantTurn];
 
-        NSLog(@"Added valid conversation turn with %d bullet points. History "
-              @"now has %lu entries",
-              validBullets, (unsigned long)conversationHistory.count);
+        NSLog(@"Added valid conversation turn (%lu chars). History now has %lu entries",
+              (unsigned long)trimmed.length, (unsigned long)conversationHistory.count);
     } else {
-        NSLog(
-            @"Skipping malformed response with only %d valid bullet points: %@",
-            validBullets, assistantResponse);
+        NSLog(@"Skipping malformed response (length: %lu, has sentences: %d): %@",
+              (unsigned long)trimmed.length, hasSentences, assistantResponse);
     }
 }
 
@@ -268,10 +254,6 @@
         "<\\|im_start\\|>.*?<\\|im_end\\|>|<\\|im_start\\|>|<\\|im_end\\|>");
     text = std::regex_replace(text, chat_markers, "");
 
-    // Remove any chit-chat or extra intro text before the actual survival tips
-    std::regex intro_pattern("^.*?(?:here are|EXACTLY|COMMANDS|STAY CALM)");
-    text = std::regex_replace(text, intro_pattern, "");
-
     // Handle Phi-3 specific tokenization artifacts
     std::regex phi_g_macron("Ġ"); // G with macron above (common in tokenizers)
     text = std::regex_replace(text, phi_g_macron, " ");
@@ -279,43 +261,36 @@
     std::regex phi_c_dot("Ċ"); // C with dot above (often represents newlines)
     text = std::regex_replace(text, phi_c_dot, "\n");
 
-    // Convert numbered list to clear bullet points
-    std::regex numbered_list_pattern("([0-9]+)[.)]\\s*");
-    text = std::regex_replace(text, numbered_list_pattern, "• ");
-
     // Handle any remaining Unicode special characters
     std::regex llama_underscore_pattern("▁");
     text = std::regex_replace(text, llama_underscore_pattern, " ");
 
-    // Replace regular underscores with spaces
+    // Replace regular underscores with spaces (simple version)
     std::regex underscore_pattern("_");
     text = std::regex_replace(text, underscore_pattern, " ");
 
-    // Clean up colon formatting in bullet points for consistency
-    std::regex colon_format("• ([^:\n]+):");
-    text = std::regex_replace(text, colon_format, "• $1 -");
-
-    // Handle control characters
-    std::regex control_pattern("<0x[0-9A-F]+>");
+    // Handle control characters - specifically convert <0x0A> to newlines
+    std::regex newline_pattern("<0x0A>");
+    text = std::regex_replace(text, newline_pattern, "\n");
+    
+    // Remove other control characters
+    std::regex control_pattern("<0x[0-9A-Fa-f]+>");
     text = std::regex_replace(text, control_pattern, "");
 
     // Normalize newlines (convert multiple newlines to double newline)
-    std::regex multi_newline("\\n{3,}");
+    std::regex multi_newline("\\n\\n\\n+");
     text = std::regex_replace(text, multi_newline, "\n\n");
 
     // Replace multiple spaces with a single space
-    std::regex multi_space("\\s+");
+    std::regex multi_space("  +");
     text = std::regex_replace(text, multi_space, " ");
 
     // Trim the leading/trailing whitespace
-    std::regex leading_space("^\\s+");
-    std::regex trailing_space("\\s+$");
-    text = std::regex_replace(text, leading_space, "");
-    text = std::regex_replace(text, trailing_space, "");
-
-    // Fix any remaining bullet point issues
-    std::regex fix_bullet_spacing("•\\s*");
-    text = std::regex_replace(text, fix_bullet_spacing, "• ");
+    size_t start = text.find_first_not_of(" \t\n\r");
+    size_t end = text.find_last_not_of(" \t\n\r");
+    if (start != std::string::npos && end != std::string::npos) {
+        text = text.substr(start, end - start + 1);
+    }
 
     return [NSString stringWithUTF8String:text.c_str()];
 }
@@ -392,23 +367,6 @@
         return @"Ready to help in emergencies.";
     }
 
-    // Check for "cold" or "freezing" keywords and use example response directly
-    NSString *lowercasePrompt = [prompt lowercaseString];
-    if ([lowercasePrompt containsString:@"cold"] ||
-        [lowercasePrompt containsString:@"freezing"] ||
-        [lowercasePrompt containsString:@"ice"] ||
-        [lowercasePrompt containsString:@"snow"]) {
-        NSString *coldResponse =
-            @"• FIND SHELTER - Get out of wind and precipitation "
-            @"immediately\n• STAY DRY - Remove wet clothing as it conducts "
-            @"heat away from your body\n• LAYER CLOTHING - Trap air between "
-            @"layers for better insulation\n• KEEP MOVING - Generate body heat "
-            @"with light exercise, avoid sweating\n• STAY HYDRATED - Drink "
-            @"warm liquids if available, avoid alcohol";
-        [self addToHistory:prompt response:coldResponse];
-        return coldResponse;
-    }
-
     // Build prompt with conversation history
     NSString *fullPrompt = [self buildPromptWithHistory:prompt];
 
@@ -478,15 +436,13 @@
             return @"Error: Failed to process input";
         }
 
-        // Generate with bullet point limiting and max_tokens = 200
+        // Generate with higher token limit for complete responses
         std::string result_text;
         llama_seq_id gen_seq_id = 0;
 
-        int max_tokens =
-            200; // Increased slightly to ensure complete bullet points
-        int bulletCount = 0;
-        bool inBulletPoint = false;
-        std::string currentBullet = "";
+        int max_tokens = 512; // Increased to allow complete, natural responses
+        int sentenceCount = 0;
+        bool lastWasPeriod = false;
 
         for (int i = 0; i < max_tokens; i++) {
             llama_token next = llama_sampler_sample(sampler, ctx, -1);
@@ -506,31 +462,17 @@
 
             result_text += piece;
 
-            // Better bullet point detection and completion
-            if (strstr(piece, "•") != NULL) {
-                bulletCount++;
-                inBulletPoint = true;
-                currentBullet = "";
-                NSLog(@"Found bullet point %d", bulletCount);
-            }
-
-            // If we're in a bullet point, track its completion
-            if (inBulletPoint) {
-                currentBullet += piece;
-
-                // Check if bullet point is complete (has action and
-                // description)
-                if (strstr(piece, "\n") != NULL ||
-                    strstr(piece, "<0x0A>") != NULL) {
-                    // Bullet point completed
-                    inBulletPoint = false;
-                    NSLog(@"Completed bullet point %d: %s", bulletCount,
-                          currentBullet.c_str());
-
-                    if (bulletCount >= 5) {
-                        NSLog(@"Stopping after completing 5 bullet points");
-                        break;
-                    }
+            // Track sentence endings for natural stopping
+            if (strstr(piece, ".") != NULL || strstr(piece, "!") != NULL) {
+                lastWasPeriod = true;
+            } else if (lastWasPeriod && (strstr(piece, " ") != NULL || strstr(piece, "\n") != NULL)) {
+                sentenceCount++;
+                lastWasPeriod = false;
+                
+                // Stop after a reasonable amount of content (10+ sentences)
+                if (sentenceCount >= 10 && i > 300) {
+                    NSLog(@"Stopping after %d sentences and %d tokens for natural completion", sentenceCount, i);
+                    break;
                 }
             }
 

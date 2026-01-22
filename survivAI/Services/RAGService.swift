@@ -76,10 +76,10 @@ class RAGService {
     private func buildSystemPrompt(knowledgeChunks: [KnowledgeChunk], memories: [SemanticFact], category: EmergencyCategory) -> String {
         var prompt = "<|im_start|>system\n"
         
-        // Base role definition (minimal)
+        // Base role definition - natural conversational style
         prompt += "You are an emergency survival assistant. "
-        prompt += "Respond with EXACTLY 5 bullet points. "
-        prompt += "Each bullet: • ACTION IN CAPS - brief explanation.\n"
+        prompt += "Provide clear, actionable survival advice in natural, conversational language. "
+        prompt += "Be concise but complete. Explain the most important actions first.\n"
         
         // Add relevant knowledge if available
         if !knowledgeChunks.isEmpty {
@@ -146,9 +146,8 @@ extension RAGService {
         return """
         <|im_start|>system
         You are an emergency survival assistant.
-        Respond with EXACTLY 5 bullet points.
-        Each bullet: • ACTION IN CAPS - brief explanation.
-        Provide clear, actionable emergency guidance.
+        Provide clear, actionable survival advice in natural, conversational language.
+        Be concise but complete. Explain the most important actions first.
         <|im_end|>
         """
     }

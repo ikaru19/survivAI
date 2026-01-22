@@ -39,70 +39,138 @@ struct MessageView: View {
     
     @ViewBuilder
     private func formattedMessageView(_ text: String) -> some View {
-        if hasBulletPoints(text) {
-            bulletPointView(text)
+        let cleanedText = cleanText(text)
+        let components = parseMessageComponents(cleanedText)
+        
+        if components.isEmpty {
+            Text(cleanedText)
         } else {
-            Text(text)
-        }
-    }
-    
-    private func hasBulletPoints(_ text: String) -> Bool {
-        return text.contains("•") || text.contains("- ")
-    }
-    
-    @ViewBuilder
-    private func bulletPointView(_ text: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            let bulletItems = parseBulletPoints(text)
-            
-            ForEach(bulletItems, id: \.self) { item in
-                HStack(alignment: .top, spacing: 8) {
-                    Image(systemName: "circle.fill")
-                        .font(.system(size: 6))
-                        .foregroundColor(.red)
-                        .padding(.top, 6)
-                    
-                    Text(item)
-                        .font(.body)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(Array(components.enumerated()), id: \.offset) { index, component in
+                    componentView(component)
                 }
             }
         }
     }
     
-    private func parseBulletPoints(_ text: String) -> [String] {
-        // First, clean up common LLM artifacts
-        var cleanedText = text
-            .replacingOccurrences(of: "<0x0A>", with: "\n")  // Replace encoded newlines
-            .replacingOccurrences(of: "▁", with: " ")        // Replace space tokens
-            .replacingOccurrences(of: "<|end|>", with: "")
-            .replacingOccurrences(of: "<|im_end|>", with: "")
-            .replacingOccurrences(of: "<|im_start|>", with: "")
-            .replacingOccurrences(of: "<|assistant|>", with: "")
-            .replacingOccurrences(of: "assistant", with: "")
-        
-        // Split by bullet points and clean up
-        let lines = cleanedText.components(separatedBy: "•")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-        
-        // Further clean each line
-        return lines.map { line in
-            var cleanLine = line
-                .trimmingCharacters(in: .whitespacesAndNewlines)
+    @ViewBuilder
+    private func componentView(_ component: MessageComponent) -> some View {
+        switch component {
+        case .paragraph(let text):
+            Text(text)
+                .font(.body)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
             
-            // Remove any remaining artifacts at the end
-            if cleanLine.hasSuffix("assistant") {
-                cleanLine = String(cleanLine.dropLast(9)).trimmingCharacters(in: .whitespacesAndNewlines)
+        case .numberedItem(let number, let text):
+            HStack(alignment: .top, spacing: 8) {
+                Text("\(number).")
+                    .font(.body.weight(.semibold))
+                    .foregroundColor(.red)
+                    .frame(minWidth: 20, alignment: .trailing)
+                
+                Text(text)
+                    .font(.body)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
-            // Clean up any double spaces
-            while cleanLine.contains("  ") {
-                cleanLine = cleanLine.replacingOccurrences(of: "  ", with: " ")
+        case .bulletItem(let text):
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "circle.fill")
+                    .font(.system(size: 6))
+                    .foregroundColor(.red)
+                    .padding(.top, 6)
+                
+                Text(text)
+                    .font(.body)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            
-            return cleanLine
         }
     }
-} 
+    
+    private func cleanText(_ text: String) -> String {
+        var cleaned = text
+        
+        // Clean up multiple spaces
+        while cleaned.contains("  ") {
+            cleaned = cleaned.replacingOccurrences(of: "  ", with: " ")
+        }
+        
+        // Clean up multiple newlines (keep max 2 for paragraph breaks)
+        while cleaned.contains("\n\n\n") {
+            cleaned = cleaned.replacingOccurrences(of: "\n\n\n", with: "\n\n")
+        }
+        
+        return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    private func parseMessageComponents(_ text: String) -> [MessageComponent] {
+        var components: [MessageComponent] = []
+        let lines = text.components(separatedBy: "\n")
+        var currentParagraph = ""
+        
+        for line in lines {
+            let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+            
+            // Skip empty lines - they just create paragraph breaks
+            if trimmedLine.isEmpty {
+                if !currentParagraph.isEmpty {
+                    components.append(.paragraph(currentParagraph.trimmingCharacters(in: .whitespaces)))
+                    currentParagraph = ""
+                }
+                continue
+            }
+            
+            // Check for numbered list items (e.g., "1.", "2.", etc.)
+            if let match = trimmedLine.range(of: #"^(\d+)\.\s+"#, options: .regularExpression) {
+                // Save any accumulated paragraph
+                if !currentParagraph.isEmpty {
+                    components.append(.paragraph(currentParagraph.trimmingCharacters(in: .whitespaces)))
+                    currentParagraph = ""
+                }
+                
+                let numberStr = String(trimmedLine[match]).replacingOccurrences(of: ".", with: "").trimmingCharacters(in: .whitespaces)
+                let content = String(trimmedLine[match.upperBound...]).trimmingCharacters(in: .whitespaces)
+                
+                if let number = Int(numberStr), !content.isEmpty {
+                    components.append(.numberedItem(number: number, text: content))
+                }
+            }
+            // Check for bullet points
+            else if trimmedLine.hasPrefix("• ") || trimmedLine.hasPrefix("- ") {
+                // Save any accumulated paragraph
+                if !currentParagraph.isEmpty {
+                    components.append(.paragraph(currentParagraph.trimmingCharacters(in: .whitespaces)))
+                    currentParagraph = ""
+                }
+                
+                let content = String(trimmedLine.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+                if !content.isEmpty {
+                    components.append(.bulletItem(content))
+                }
+            }
+            // Regular text - accumulate as paragraph
+            else {
+                if !currentParagraph.isEmpty {
+                    currentParagraph += " "
+                }
+                currentParagraph += trimmedLine
+            }
+        }
+        
+        // Add any remaining paragraph
+        if !currentParagraph.isEmpty {
+            components.append(.paragraph(currentParagraph.trimmingCharacters(in: .whitespaces)))
+        }
+        
+        return components
+    }
+}
+
+enum MessageComponent {
+    case paragraph(String)
+    case numberedItem(number: Int, text: String)
+    case bulletItem(String)
+}
