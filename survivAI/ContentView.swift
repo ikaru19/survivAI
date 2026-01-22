@@ -42,7 +42,7 @@ struct ContentView: View {
                 }
             }
             .padding()
-            .background(Color(UIColor.systemBackground))
+            .background(Color(.systemBackground))
             
             // Chat history display
             ScrollViewReader { scrollView in
@@ -113,7 +113,7 @@ struct ContentView: View {
             }
             .padding()
         }
-        .background(Color(UIColor.systemBackground))
+        .background(Color(.systemBackground))
         .onAppear {
             // Add welcome message when app loads
             let welcomeMessage = EmergencyResponse(

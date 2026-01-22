@@ -48,11 +48,25 @@
              "• STAY WARM - Insulate with clothing or natural materials\n"
              "<|im_end|>";
 
+        // Try to load model from Models directory first, then fall back to root
         NSString *path = [[NSBundle mainBundle]
-            pathForResource:@"phi-3-mini-128k-instruct.Q4_K_M"
+            pathForResource:@"Models/Phi-3.5-mini-instruct_Uncensored-Q4_K_M"
                      ofType:@"gguf"];
         if (!path) {
-            NSLog(@"Error: Model file not found in the bundle");
+            // Fallback: try root directory for backward compatibility
+            path = [[NSBundle mainBundle]
+                pathForResource:@"Phi-3.5-mini-instruct_Uncensored-Q4_K_M"
+                         ofType:@"gguf"];
+        }
+        if (!path) {
+            NSLog(@"Error: Model file 'Phi-3.5-mini-instruct_Uncensored-Q4_K_M.gguf' not found in the bundle");
+            NSLog(@"Please ensure the model file is added to the survivAI/Models/ directory");
+            NSLog(@"Expected location: survivAI/Models/Phi-3.5-mini-instruct_Uncensored-Q4_K_M.gguf");
+            NSLog(@"Download from: https://huggingface.co/bartowski/Phi-3.5-mini-instruct_Uncensored-GGUF");
+            // Don't fail initialization, just mark model as unavailable
+            model = NULL;
+            ctx = NULL;
+            sampler = NULL;
             return self;
         }
         const char *modelPath = [path UTF8String];
@@ -63,7 +77,10 @@
             40; // Use Metal for all possible layers on A18 Pro
         model = llama_model_load_from_file(modelPath, model_params);
         if (!model) {
-            NSLog(@"Error: Failed to load model");
+            NSLog(@"Error: Failed to load model from path: %s", modelPath);
+            NSLog(@"Please verify the model file is valid and compatible with llama.cpp");
+            ctx = NULL;
+            sampler = NULL;
             return self;
         }
 
@@ -77,7 +94,11 @@
 
         ctx = llama_init_from_model(model, ctx_params);
         if (!ctx) {
-            NSLog(@"Error: Failed to create context");
+            NSLog(@"Error: Failed to create context from model");
+            NSLog(@"This may be due to insufficient memory or incompatible model parameters");
+            llama_model_free(model);
+            model = NULL;
+            sampler = NULL;
             return self;
         }
 
@@ -364,7 +385,8 @@
 - (NSString *)runPrompt:(NSString *)prompt {
     // Check if model and context are initialized
     if (!model || !ctx || !sampler) {
-        return @"Error: The language model is not properly initialized.";
+        NSLog(@"LLM not initialized - model:%p ctx:%p sampler:%p", model, ctx, sampler);
+        return @"Error: The language model is not initialized. Please ensure Phi-3.5-mini-instruct_Uncensored-Q4_K_M.gguf is placed in the survivAI/Models/ directory and added to the Xcode project target.";
     }
 
     // Special case for test prompt

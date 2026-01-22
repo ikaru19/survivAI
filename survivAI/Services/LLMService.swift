@@ -25,7 +25,16 @@ class LLMService: ObservableObject, LLMServiceProtocol {
         DispatchQueue.global(qos: .background).async { [weak self] in
             let testResponse = self?.llmWrapper.runPrompt("test") ?? ""
             DispatchQueue.main.async {
-                self?.isReady = !testResponse.isEmpty
+                // Check if the response indicates model is properly loaded
+                let isModelLoaded = !testResponse.isEmpty && !testResponse.contains("Error:")
+                self?.isReady = isModelLoaded
+                
+                if !isModelLoaded {
+                    self?.lastError = testResponse
+                    print("LLM Service initialization failed: \(testResponse)")
+                } else {
+                    print("LLM Service initialized successfully")
+                }
             }
         }
     }
@@ -40,12 +49,20 @@ class LLMService: ObservableObject, LLMServiceProtocol {
         
         // Check if LLM is ready
         guard isReady else {
+            if let error = lastError {
+                throw LLMServiceError.processingError(error)
+            }
             throw LLMServiceError.modelNotReady
         }
         
         // Get response from wrapper
         guard let response = llmWrapper.runPrompt(prompt) else {
             throw LLMServiceError.emptyResponse
+        }
+        
+        // Check if response contains an error
+        if response.contains("Error:") {
+            throw LLMServiceError.processingError(response)
         }
         
         return response
